@@ -33,7 +33,13 @@ class RegisterEmailView(APIView):
         email_body = 'Hi ' + ' Use the link below to verify your email \n' + absurl
         data = {'email_body': email_body, 'to_email': user.email, 'email_subject': 'Verify your email'}
 
-        Util.send_email(data)
+        try:
+            Util.send_email(data)
+        except Exception as e:
+            print(f"Failed to send verification email to {user.email}: {e}")
+            return Response({'message': 'Failed to send verification email.'},
+                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
 
         token_payload = {'email': user.email}
 
