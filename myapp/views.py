@@ -4,16 +4,22 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer
+from .serializers import RegistrationSerializer, EmailVerificationSerializer
 from django.http import HttpResponseRedirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
 from .utils import Util
+from django.conf import settings
+from django.contrib.auth.models import User
+from django.shortcuts import redirect
+from rest_framework.permissions import AllowAny
+import jwt
 
 class CustomRedirect(HttpResponseRedirect):
     allowed_schemes = [os.environ.get('APP_SCHEME'), 'http', 'https']
 
 class RegisterEmailView(APIView):
+    permission_classes = [AllowAny]
     serializer_class = RegistrationSerializer
 
     def post(self, request):
@@ -44,6 +50,29 @@ class RegisterEmailView(APIView):
         token_payload = {'email': user.email}
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class VerifyEmail(APIView):
+    serializer_class = EmailVerificationSerializer
+    def get(self, request):
+        token = request.GET.get('token') # извлекает параметр token из строки запроса URL
+        try:
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            user_id = payload['user_id']
+            email = payload['email']
+            user = User.objects.get(user_id=user_id, email=email)
+            if not user:
+                return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+            if not user.is_verified: # проверяет подтвержден ли уже адрес электронной почты
+                user.is_verified = True
+                user.save()
+
+            return redirect(reverse('register-personal-info') + f'?email={email}')
+        except jwt.ExpiredSignatureError:
+            return Response({'error': 'Activation link has expired'}, status=status.HTTP_400_BAD_REQUEST)
+        except (jwt.exceptions.DecodeError, User.DoesNotExist):
+            return Response({'error': 'Invalid activation link'}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 

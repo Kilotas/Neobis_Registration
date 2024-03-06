@@ -27,7 +27,7 @@ class RegistrationSerializer(serializers.Serializer):
     email = serializers.EmailField()
     username = serializers.CharField(max_length=255)
     password = serializers.CharField(max_length=15, min_length=8, write_only=True)
-    password_conifrm = serializers.CharField(max_length=15, min_length=8, write_only=True)
+    password_confirm = serializers.CharField(max_length=15, min_length=8, write_only=True)
 
     def validate(self, data):
         if data['password'] != data['password_confirm']:
