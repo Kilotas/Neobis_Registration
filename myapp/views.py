@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer, EmailVerificationSerializer
+from .serializers import RegistrationSerializer, EmailVerificationSerializer,RegisterPersonalInfoSerializer
 from django.http import HttpResponseRedirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -57,7 +57,7 @@ class VerifyEmail(APIView):
     def get(self, request):
         token = request.GET.get('token') # извлекает параметр token из строки запроса URL
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256']) # добавление дополнительный информации к токену без изменения его основного задержания
             user_id = payload['user_id']
             email = payload['email']
             user = User.objects.get(user_id=user_id, email=email)
@@ -74,6 +74,27 @@ class VerifyEmail(APIView):
             return Response({'error': 'Invalid activation link'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class RegisterPersonalInfoView(APIView):
+    serializer_class = RegisterPersonalInfoSerializer# сериализатор для обработки и валидации данных запроса
+
+    def put(self, request):
+        user_email = request.GET.get('email') # Получение значения параметра email из строки запроса (query string) URL
+        email_field = request.data.get('email') # Получение значения параметра email из строки запроса (query string) URL и сохранение его в переменную email_field
+
+        if not user_email or not email_field or user_email != email_field:
+            return Response({'error': 'Email mismatch'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = User.objects.get(email=email_field)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = RegisterPersonalInfoSerializer(user, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 

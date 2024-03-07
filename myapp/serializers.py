@@ -15,7 +15,7 @@ class RegisterEmailSerializer(serializers.ModelSerializer):
         fields = ['email']
 
 class EmailVerificationSerializer(serializers.ModelSerializer):
-    token = serializers.CharField(max_length=100)
+    token = serializers.CharField(max_length=255)
 
     class Meta:
         model = User
@@ -38,6 +38,18 @@ class RegistrationSerializer(serializers.Serializer):
         validated_data.pop('password_confirm')
         return User.objects.create_user(**validated_data)
 
+class RegisterPersonalInfoSerializer(serializers.Serializer):
+    first_name = serializers.CharField(max_length=255)
+    email = serializers.EmailField()
+
+    def update(self, instance, validated_data):
+        try:
+            instance.first_name = validated_data.get('first_name', instance.first_name)
+            instance.email = validated_data.get('email', instance.email)
+            instance.save()
+        except AttributeError:
+            pass
+        return instance
 
 
 

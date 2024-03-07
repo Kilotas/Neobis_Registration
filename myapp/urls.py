@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterEmailView, VerifyEmail
+from .views import RegisterEmailView, VerifyEmail, RegisterPersonalInfoView
 from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
@@ -27,5 +27,6 @@ urlpatterns = [
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
     path('register-email/', RegisterEmailView.as_view(), name='register-email'),
     path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
+    path('register/personal-info/', RegisterPersonalInfoView.as_view(), name='register-personal-info'),
 
 ]
