@@ -25,7 +25,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path('swagger<format>/', schema_view.without_ui(cache_timeout=0), name='schema-json'),
     path('swagger/', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
-    path('register-email/', RegisterEmailView.as_view(), name='register-email'),
+    path('register/email/', RegisterEmailView.as_view(), name='email-verification'),
     path('email-verify/', VerifyEmail.as_view(), name='email-verify'),
     path('register/personal-info/', RegisterPersonalInfoView.as_view(), name='register-personal-info'),
 

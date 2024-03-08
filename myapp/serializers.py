@@ -40,11 +40,15 @@ class RegistrationSerializer(serializers.Serializer):
 
 class RegisterPersonalInfoSerializer(serializers.Serializer):
     first_name = serializers.CharField(max_length=255)
-    email = serializers.EmailField()
+    last_name = serializers.CharField(max_length=255)
+    birth_date = serializers.DateField()
+    email = serializers.EmailField(required=True)
 
     def update(self, instance, validated_data):
         try:
             instance.first_name = validated_data.get('first_name', instance.first_name)
+            instance.last_name = validated_data.get('last_name', instance.last_name)
+            instance.birth_date = validated_data.get('birth_date', instance.birth_date)
             instance.email = validated_data.get('email', instance.email)
             instance.save()
         except AttributeError:

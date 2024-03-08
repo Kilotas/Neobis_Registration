@@ -14,6 +14,7 @@ from django.contrib.auth.models import User
 from django.shortcuts import redirect
 from rest_framework.permissions import AllowAny
 import jwt
+from django.contrib.auth import get_user_model
 
 class CustomRedirect(HttpResponseRedirect):
     allowed_schemes = [os.environ.get('APP_SCHEME'), 'http', 'https']
@@ -54,16 +55,19 @@ class RegisterEmailView(APIView):
 
 class VerifyEmail(APIView):
     serializer_class = EmailVerificationSerializer
+
     def get(self, request):
-        token = request.GET.get('token') # извлекает параметр token из строки запроса URL
+        token = request.GET.get('token')
+        User = get_user_model()  # Получение модели пользователя
+
         try:
-            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256']) # добавление дополнительный информации к токену без изменения его основного задержания
+            payload = jwt.decode(token, settings.SECRET_KEY, algorithms=['HS256'])
             user_id = payload['user_id']
             email = payload['email']
-            user = User.objects.get(user_id=user_id, email=email)
+            user = User.objects.get(id=user_id, email=email)
             if not user:
                 return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-            if not user.is_verified: # проверяет подтвержден ли уже адрес электронной почты
+            if not user.is_verified:
                 user.is_verified = True
                 user.save()
 
@@ -75,26 +79,38 @@ class VerifyEmail(APIView):
 
 
 class RegisterPersonalInfoView(APIView):
-    serializer_class = RegisterPersonalInfoSerializer# сериализатор для обработки и валидации данных запроса
+    serializer_class = RegisterPersonalInfoSerializer
+    permission_classes = [AllowAny,]
 
     def put(self, request):
-        user_email = request.GET.get('email') # Получение значения параметра email из строки запроса (query string) URL
-        email_field = request.data.get('email') # Получение значения параметра email из строки запроса (query string) URL и сохранение его в переменную email_field
+        User = get_user_model()
+        user_email = request.GET.get('email')
+        user_email = user_email.rstrip('/')
+        email_field = request.data.get('email')
 
         if not user_email or not email_field or user_email != email_field:
             return Response({'error': 'Email mismatch'}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
+            # получаем пользователя через миейл
             user = User.objects.get(email=email_field)
-        except User.DoesNotExist:
-            return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
-        serializer = RegisterPersonalInfoSerializer(user, data=request.data)
+        except User.DoesNotExist:
+            return Response({'error': 'User not found'}, status=status.HTTP_400_NOT_FOUND)
+
+        serializer = RegisterPersonalInfoSerializer(user, data=request.data) # используетася для обновления объектов в сериализаторе
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
+
+            return Response(data={"email": user_email}, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+    # сериализатор для обработки и вали
 
 
 

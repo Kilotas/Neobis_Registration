@@ -78,15 +78,22 @@ WSGI_APPLICATION = 'NeobisProject8.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.2/ref/settings/#databases
 
+#DATABASES = {
+#    'default': {
+#        #'ENGINE': 'django.db.backends.sqlite3',
+#        'ENGINE': 'django.db.backends.postgresql',
+#        'NAME': 'railway',
+#        'USER': 'postgres',
+#        'PASSWORD': 'Df1AfCG1*ae35FBaFg1AGbcCF2acfFFf',
+#        'HOST': 'roundhouse.proxy.rlwy.net',
+#        'PORT': '28826',
+#    }
+#}
+
 DATABASES = {
     'default': {
-        #'ENGINE': 'django.db.backends.sqlite3',
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'railway',
-        'USER': 'postgres',
-        'PASSWORD': 'Df1AfCG1*ae35FBaFg1AGbcCF2acfFFf',
-        'HOST': 'roundhouse.proxy.rlwy.net',
-        'PORT': '28826',
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

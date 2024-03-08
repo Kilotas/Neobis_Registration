@@ -38,7 +38,10 @@ AUTH_PROVIDERS = {'facebook': 'facebook', 'google': 'google',
 class User(AbstractUser, PermissionsMixin):
     username = models.CharField(max_length=255, unique=True, db_index=True)
     email = models.EmailField(max_length=255, unique=True, db_index=True)
-    is_verified = models.BooleanField(default=True)
+    first_name = models.CharField(max_length=255, blank=True, null=True)
+    last_name = models.CharField(max_length=255, blank=True, null=True)
+    birth_date = models.DateField(null=True, blank=True, default=None)
+    is_verified = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now=True)
@@ -63,6 +66,7 @@ class User(AbstractUser, PermissionsMixin):
             'refresh': str(refresh),
             'access': str(refresh.access_token)
         }
+
 
 
 class Hash(models.Model):
