@@ -17,6 +17,9 @@ import jwt
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 from rest_framework.exceptions import AuthenticationFailed
+from drf_yasg.utils import swagger_auto_schema
+from drf_yasg import openapi
+
 
 
 class CustomRedirect(HttpResponseRedirect):
@@ -25,6 +28,13 @@ class CustomRedirect(HttpResponseRedirect):
 class RegisterEmailView(APIView):
     permission_classes = [AllowAny]
     serializer_class = RegistrationSerializer
+
+    @swagger_auto_schema(
+        request_body=RegistrationSerializer,
+        responses={201: 'User registered successfully', 400: 'Invalid data'},
+        operation_description="This endpoint allows a user to register an account. "
+                              "A verification email with a link is sent to the provided email address."
+    )
 
     def post(self, request):
         serializer = self.serializer_class(data=request.data) # создание экземляра класса сериализатора
@@ -59,6 +69,13 @@ class RegisterEmailView(APIView):
 class VerifyEmail(APIView):
     serializer_class = EmailVerificationSerializer
 
+
+    @swagger_auto_schema(
+        manual_parameters=[
+            openapi.Parameter('token', openapi.IN_QUERY, type=openapi.TYPE_STRING, description="The verification token.")
+        ],
+        responses={200: 'Email verified successfully', 400: 'Invalid token'}
+    )
     def get(self, request):
         token = request.GET.get('token')
         User = get_user_model()  # Получение модели пользователя
@@ -85,6 +102,18 @@ class RegisterPersonalInfoView(APIView):
     serializer_class = RegisterPersonalInfoSerializer
     permission_classes = [AllowAny,]
 
+
+    @swagger_auto_schema(
+        tags=['Registration'],
+        operation_description="После регистрации, как только мы подтвердили свой аккаунт по почте, мы просим пользователя ввести свои личные данные",
+        request_body=RegisterPersonalInfoSerializer,
+        responses={
+            200: "Successfully updated user's personal information.",
+            400: "Bad request, email mismatch or serializer errors.",
+            404: "User not found."
+        }
+    )
+
     def put(self, request):
         User = get_user_model()
         user_email = request.GET.get('email')
@@ -109,10 +138,25 @@ class RegisterPersonalInfoView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+
+
 class LoginAPIView(APIView):
+
     serializer_class = LoginSerializer
     permission_classes = [AllowAny,]
 
+    @swagger_auto_schema(
+        tags=['Authorization'],
+        operation_description="Endpoint for user login. Returns a new access token and refresh token.",
+        request_body=LoginSerializer,
+        responses={
+            200: "Successful login. Returns the user's email and tokens.",
+            400: "Bad request. Invalid input.",
+            401: "Unauthorized. Invalid credentials.",
+            500: "Internal server error. Failed to process the request."
+        }
+    )
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
