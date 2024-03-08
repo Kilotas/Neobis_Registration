@@ -8,7 +8,6 @@ from django.utils.encoding import smart_str, force_str, smart_bytes, DjangoUnico
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
 from django.contrib.auth.password_validation import validate_password
-
 class RegisterEmailSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
@@ -55,6 +54,45 @@ class RegisterPersonalInfoSerializer(serializers.Serializer):
             pass
         return instance
 
+
+class LoginSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(max_length=255, min_length=3)
+    password = serializers.CharField(
+        max_length=16, min_length=8, write_only=True
+    )
+    token = serializers.SerializerMethodField()
+
+    def get_token(self, obj):
+        user = User.objects.get(email=obj['email']) # вытягиваем из базы данных пользователя
+
+        return {
+            'refresh': user.tokens()['refresh'], # токены доступа
+            'access': user.tokens()['access'] # токены обновления
+        }
+
+    class Meta:
+        model = User
+        fields = ['email', 'password', 'token']
+
+    def validate(self, attrs):
+        email = attrs.get('email', '') # извлечение email
+        password = attrs.get('password', '') # извлечение пароля
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            raise AuthenticationFailed('Пользователя не существует, попробуй снова')
+
+        if not user:
+            raise AuthenticationFailed('Invalid credentials, try again')
+        if not user.is_active:
+            raise AuthenticationFailed('Account disabled, contact admin')
+        if not user.is_verified:
+            raise AuthenticationFailed('Email is not verified')
+
+        return {
+            'email': user.email,
+            'tokens': user.tokens,
+        }
 
 
 

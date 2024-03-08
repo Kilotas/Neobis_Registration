@@ -4,7 +4,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import RegistrationSerializer, EmailVerificationSerializer,RegisterPersonalInfoSerializer
+from .serializers import RegistrationSerializer, EmailVerificationSerializer,RegisterPersonalInfoSerializer, LoginSerializer
 from django.http import HttpResponseRedirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.urls import reverse
@@ -15,6 +15,9 @@ from django.shortcuts import redirect
 from rest_framework.permissions import AllowAny
 import jwt
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
+from rest_framework.exceptions import AuthenticationFailed
+
 
 class CustomRedirect(HttpResponseRedirect):
     allowed_schemes = [os.environ.get('APP_SCHEME'), 'http', 'https']
@@ -106,24 +109,13 @@ class RegisterPersonalInfoView(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class LoginAPIView(APIView):
+    serializer_class = LoginSerializer
+    permission_classes = [AllowAny,]
 
-
-
-
-    # сериализатор для обработки и вали
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
