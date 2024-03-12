@@ -152,18 +152,20 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-EMAIL_USE_TLS = True
-EMAIL_HOST = 'smtp.yandex.ru'
-EMAIL_PORT = 587
-EMAIL_HOST_USER = 'Kilotas23@yandex.kz'
-EMAIL_HOST_PASSWORD = 'ccielxcbmvomgjjd'
-DEFAULT_FROM_EMAIL = 'Kilotas23@yandex.kz'
+
+#EMAIL_HOST = 'smtp.yandex.ru'
+#EMAIL_PORT = 465
+#EMAIL_USE_TLS = False
+#EMAIL_HOST_SSL = True
+#EMAIL_HOST_USER = 'escada4102@yandex.ru'
+#EMAIL_HOST_PASSWORD = 'pnlcxnoiqzjzloks'
+#DEFAULT_FROM_EMAIL = 'escada4102@yandex.ru'
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
-DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # settings.py
 
