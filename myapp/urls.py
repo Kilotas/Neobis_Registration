@@ -32,7 +32,7 @@ urlpatterns = [
     path('register/personal-info/', RegisterPersonalInfoView.as_view(), name='register-personal-info'),
     path('request-reset-email/', RequestPasswordResetEmailView.as_view(), name='request-reset-email'),
     path('password-reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
-    path('password-reset-complete', SetNewPasswordAPIView.as_view(),name='password-reset-complete'),
+    path('password-reset-complete', SetNewPasswordAPIView.as_view(), name='password-reset-complete'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
 ]
 
